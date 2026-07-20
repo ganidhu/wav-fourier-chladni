@@ -465,7 +465,56 @@ def run_pipeline():
                 print(f"\n  {YELLOW}Goodbye!{RESET}\n")
                 sys.exit(0)
 
+def handle_uninstall():
+    print(f"\n  {CYAN}Uninstalling wav-fourier-chladni...{RESET}")
+    is_pipx = False
+    try:
+        proc = subprocess.run(["pipx", "list"], capture_output=True, text=True)
+        if "wav-fourier-chladni" in proc.stdout:
+            is_pipx = True
+    except Exception:
+        pass
+
+    if is_pipx:
+        print(f"  {CYAN}Running pipx uninstall...{RESET}")
+        subprocess.run(["pipx", "uninstall", "wav-fourier-chladni"])
+    else:
+        print(f"  {CYAN}Running pip3 uninstall...{RESET}")
+        subprocess.run([sys.executable, "-m", "pip", "uninstall", "wav-fourier-chladni", "-y", "--break-system-packages"])
+    print(f"\n  {GREEN}Successfully uninstalled!{RESET}\n")
+    sys.exit(0)
+
+def handle_update():
+    print(f"\n  {CYAN}Checking for updates to wav-fourier-chladni...{RESET}")
+    is_pipx = False
+    try:
+        proc = subprocess.run(["pipx", "list"], capture_output=True, text=True)
+        if "wav-fourier-chladni" in proc.stdout:
+            is_pipx = True
+    except Exception:
+        pass
+
+    if is_pipx:
+        print(f"  {CYAN}Running pipx upgrade...{RESET}")
+        subprocess.run(["pipx", "upgrade", "wav-fourier-chladni"])
+    else:
+        print(f"  {CYAN}Running pip3 install --upgrade...{RESET}")
+        subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "wav-fourier-chladni", "--break-system-packages"])
+    print(f"\n  {GREEN}Upgrade check complete!{RESET}\n")
+    sys.exit(0)
+
 def main():
+    if len(sys.argv) > 1:
+        arg = sys.argv[1].lower()
+        if arg in ["--uninstall", "-uninstall", "uninstall"]:
+            handle_uninstall()
+        elif arg in ["--update", "-update", "update"]:
+            handle_update()
+        else:
+            print(f"\n  Unknown option: {sys.argv[1]}")
+            print("  Available options: --uninstall, --update\n")
+            sys.exit(1)
+            
     try:
         run_pipeline()
     except KeyboardInterrupt:
