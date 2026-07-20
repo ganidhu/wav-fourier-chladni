@@ -1,67 +1,71 @@
-# ⚛️ wav-fourier-chladni
+# Chladni Pattern Generator (WAV to Fourier)
 
-> Generate Chladni plate resonant pattern signatures from WAV audio waveforms using Fourier peak frequency estimation.
+An interactive tool to analyze WAV audio files, perform discrete Fourier analysis to extract dominant peak frequencies, and map those peaks to physical resonant modes on a square Chladni vibrating plate.
 
-Built for **Voca** to capture the visual aesthetic of sound. 😉
+This repository is a fork of [Fourier-from-WAV-file](https://github.com/KyleSmith19091/Fourier-from-WAV-file), extended to support interactive TUI workflows, macOS native file dialogs, SVG design exports, and WebGL-powered interactive HTML dashboards.
 
-This tool parses standard mono PCM WAV files, computes dominant resonant peaks via Fourier analysis, and projects them into physical Chladni plate math patterns. The resulting resonance signatures can be rendered as terminal ASCII art, exported as vector SVGs, or saved as interactive HTML visualizer dashboards.
-
----
-
-## ✨ Features
-
-- **Direct WAV Analysis** — Extracts frequency peaks using discrete Fourier estimation across target resonant ranges.
-- **Mac-Native UI Pickers** — Uses native macOS dialog windows for file imports and exports, falling back to safe console prompts on Linux & Windows.
-- **WAV Validation Safety** — Immediately checks file integrity and WAV headers upon import to catch incorrect files before animating the pipeline.
-- **Vector SVG Export** — Generates clean, resolution-independent SVG designs based on plate plate-eigenvalue equations.
-- **Interactive HTML Dashboards** — Exports portable WebGL-powered visualizers and Fourier analytics documents.
-- **Zero-Dependency Core** — Built purely on the Python standard library.
+For the mathematical background of plate vibration models, see [this paper on Chladni Plates](https://ddonle.com/docs/Chladni_Plate.pdf).
 
 ---
 
-## 📐 Mathematical Background
+## Project Structure
 
-This project simulates Chladni patterns using square wave resonance models derived from the multi-dimensional wave equation.
+* [voca-spectral.py](voca-spectral.py) — The main interactive Python pipeline script (3-step TUI: input selection, Fourier peak analysis, and visualizer exporting).
+* [fourier_analysis.html](fourier_analysis.html) — Dynamic HTML report template displaying audio waveform and FFT spectrum charts (Chart.js).
+* [chladni_simulator.html](chladni_simulator.html) — Interactive 2D vibrating plate simulator displaying nodal sand patterns corresponding to the wave equation.
+* [fourier_transform_analysis.md](fourier_transform_analysis.md) — Document summarizing Fourier transform calculations and eigenvalue mapping.
 
-### The Wave Equation on Cartesian Coordinates
-For a vibrating plate $\Omega = \{(x,y) \in \mathbb{R}^2 \mid -L \le x, y \le L\}$, the displacement $u(x, y, t)$ is modeled by:
+---
+
+## Features
+
+* **WAV Audio Analysis** — Parse 16-bit PCM mono WAV waveforms and compute dominant peak frequencies using discrete Fourier analysis.
+* **Mac-Native UI Dialogs** — Native macOS file picker window dialogs (`osascript`) for importing audio and selecting export folders, with terminal fallback prompts for Windows/Linux.
+* **Immediate Validation** — Immediate WAV format parsing and corruption checks during step 1 before starting computation.
+* **Vector SVG Exports** — Generate resolution-independent SVG designs of the resulting nodal sand patterns for graphic/branding usage.
+* **Portable Web Visualizers** — Export standalone HTML dashboards to inspect audio waveforms, FFT spectra, and simulated 2D plate nodal lines.
+* **Zero External Python Dependencies** — Built entirely on the standard Python library (no numpy/scipy/matplotlib required to run the core script).
+
+---
+
+## Advanced Wave Mechanics
+
+This project models Chladni sand patterns using Cartesian standing wave solutions of the multi-dimensional wave equation.
+
+### The Cartesian Wave Equation
+For a square vibrating plate $\Omega = \{(x,y) \in \mathbb{R}^2 \mid -L \le x, y \le L\}$, the displacement $u(x, y, t)$ is modeled by:
 
 $$u_{tt} = c^2\nabla^2u = c^2\left(\frac{\partial^2u}{\partial x^2} + \frac{\partial^2u}{\partial y^2}\right)$$
 
-Assuming clamped boundary conditions at the edges, the standing wave solutions (eigenmodes) can be approximated by combinations of sinusoidal functions:
+Assuming clamped boundary conditions at the edges, the standing wave solutions (eigenmodes) can be approximated by:
 
 $$u(x, y, t) = \sum_{n=1}^{\infty}\sum_{m=1}^{\infty} w_{nm} \cdot \left(\sin\left(\frac{n\pi x}{L}\right)\sin\left(\frac{m\pi y}{L}\right) + \beta\sin\left(\frac{m\pi x}{L}\right)\sin\left(\frac{n\pi y}{L}\right)\right)\cos(\omega_{nm} t)$$
 
 Where:
-- $n, m$ are the integer mode parameters (eigenvalues/eigenmodes).
-- $w_{nm}$ is the weight/amplitude of each mode (extracted from the audio peaks).
-- $\beta$ is the symmetry factor ($\pm 1$ for square plates).
-- The sand particles accumulate at the **nodal lines** where the displacement is zero, i.e., $u(x,y,t) \approx 0$.
-
-For a deeper dive into the physics of plate resonance, check out [this paper on Chladni Plates](https://ddonle.com/docs/Chladni_Plate.pdf).
+* $n, m$ are the integer mode parameters (eigenvalues).
+* $w_{nm}$ is the weight of each mode, mapped directly from the dominant audio frequency amplitudes computed via Fourier analysis.
+* $\beta$ is the symmetry factor (typically $\pm 1$ for square plates).
+* The sand particles accumulate at the **nodal lines** where the plate displacement is zero, i.e., $u(x,y,t) \approx 0$.
 
 ---
 
-## 🚀 Prerequisites
+## Installation & Running
 
-To run the core analysis and file workflows, all you need is **Python 3**.
+### Prerequisites
+To run the core analysis, you only need **Python 3**.
 
-If you wish to use the **live microphone recording** feature:
-- **macOS**: `brew install sox` or ensure `ffmpeg` is in your system path.
-- **Linux**: `sudo apt install alsa-utils` (for `arecord`) or `sox`.
+If you wish to use the microphone recording feature:
+* **macOS**: `brew install sox` or ensure `ffmpeg` is installed.
+* **Linux**: `sudo apt install alsa-utils` (for `arecord`) or `sox`.
 
----
-
-## 🕹 Usage
-
-Launch the pipeline tool:
+### Usage
+Start the interactive terminal program:
 
 ```bash
 python3 voca-spectral.py
 ```
 
-The interactive TUI walks you through 3 simple steps:
-
-1. **Input Sound** — Record live from your mic or select an existing `.wav` file using a macOS window dialog.
-2. **Fourier Analysis** — Computes spectral resonance loops.
-3. **Resonant Signatures** — Displays a terminal preview, exports SVGs, generates WebGL HTML dashboards, or runs a local browser simulator.
+The script will guide you through:
+1. **Audio Selection**: Pick a WAV file using a native macOS window picker or record live from the microphone.
+2. **Analysis**: Performs the discrete Fourier calculations.
+3. **Resonant Signatures**: Renders an ASCII art preview of the pattern in the terminal, and lets you choose to export SVG files or HTML dashboards.
