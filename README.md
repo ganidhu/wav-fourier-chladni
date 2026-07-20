@@ -6,16 +6,12 @@ This repository is a fork of [Fourier-from-WAV-file](https://github.com/KyleSmit
 
 For the mathematical background of plate vibration models, see [this paper on Chladni Plates](https://ddonle.com/docs/Chladni_Plate.pdf).
 
----
-
 ## Project Structure
 
 * [voca-spectral.py](voca-spectral.py) — The main interactive Python pipeline script (3-step TUI: input selection, Fourier peak analysis, and visualizer exporting).
 * [fourier_analysis.html](fourier_analysis.html) — Dynamic HTML report template displaying audio waveform and FFT spectrum charts (Chart.js).
 * [chladni_simulator.html](chladni_simulator.html) — Interactive 2D vibrating plate simulator displaying nodal sand patterns corresponding to the wave equation.
 * [fourier_transform_analysis.md](fourier_transform_analysis.md) — Document summarizing Fourier transform calculations and eigenvalue mapping.
-
----
 
 ## Features
 
@@ -25,8 +21,6 @@ For the mathematical background of plate vibration models, see [this paper on Ch
 * **Vector SVG Exports** — Generate resolution-independent SVG designs of the resulting nodal sand patterns for graphic/branding usage.
 * **Portable Web Visualizers** — Export standalone HTML dashboards to inspect audio waveforms, FFT spectra, and simulated 2D plate nodal lines.
 * **Zero External Python Dependencies** — Built entirely on the standard Python library (no numpy/scipy/matplotlib required to run the core script).
-
----
 
 ## Advanced Wave Mechanics
 
