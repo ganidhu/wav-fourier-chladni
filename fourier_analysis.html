@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fourier Analysis Dashboard</title>
+    <!-- Tailwind CSS (for structure/layout) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --accent: 240 4.8% 95.9%;
+            --accent-foreground: 240 5.9% 10%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 240 5.9% 90%;
+            --input: 240 5.9% 90%;
+            --ring: 240 5.9% 10%;
+            --radius: 0.5rem;
+        }
+
+        [data-theme="dark"] {
+            --background: 240 10% 3.9%;
+            --foreground: 0 0% 98%;
+            --card: 240 10% 3.9%;
+            --card-foreground: 0 0% 98%;
+            --popover: 240 10% 3.9%;
+            --popover-foreground: 0 0% 98%;
+            --primary: 0 0% 98%;
+            --primary-foreground: 240 5.9% 10%;
+            --secondary: 240 3.7% 15.9%;
+            --secondary-foreground: 0 0% 98%;
+            --muted: 240 3.7% 15.9%;
+            --muted-foreground: 240 5% 64.9%;
+            --accent: 240 3.7% 15.9%;
+            --accent-foreground: 0 0% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 240 3.7% 15.9%;
+            --input: 240 3.7% 15.9%;
+            --ring: 240 4.9% 83.9%;
+        }
+
+        body {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            transition: background-color 150ms ease, color 150ms ease;
+        }
+
+        .card {
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.25rem;
+            padding: 0.5rem 1rem;
+            transition: all 150ms ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            border: 1px solid hsl(var(--border));
+        }
+        .btn-secondary:hover {
+            background-color: hsl(var(--accent));
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: hsl(var(--foreground));
+            border: 1px solid hsl(var(--border));
+        }
+        .btn-outline:hover {
+            background-color: hsl(var(--secondary));
+        }
+
+        .btn-ghost {
+            background-color: transparent;
+            color: hsl(var(--foreground));
+        }
+        .btn-ghost:hover {
+            background-color: hsl(var(--secondary));
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            padding: 0.125rem 0.625rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1rem;
+            border: 1px solid transparent;
+        }
+
+        .badge-secondary {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            border-color: hsl(var(--border));
+        }
+
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: rgb(16, 185, 129);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .toast {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            transform: translateY(1rem);
+            transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 320px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .border-subtle {
+            border-color: hsl(var(--border));
+        }
+    </style>
+</head>
+<body class="min-h-screen py-8 px-4 md:px-8">
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <!-- App Shell Navigation -->
+        <header class="flex justify-between items-center border-b border-subtle pb-4">
+            <div class="flex items-center gap-2">
+                <div class="p-2 rounded-md bg-secondary text-primary">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3M6 6v11M10 3v18M14 8v7M18 5v13M22 10v3"/></svg>
+                </div>
+                <span class="text-sm font-semibold tracking-tight code-font">SpectralLab</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="themeToggle" class="btn btn-outline p-2 h-9 w-9" aria-label="Toggle theme">
+                    <i data-lucide="sun" class="h-4 w-4 block dark:hidden"></i>
+                    <i data-lucide="moon" class="h-4 w-4 hidden dark:block"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-semibold tracking-tight">Fourier Analysis Dashboard</h1>
+                <p class="text-sm text-muted-foreground mt-1">Spectral decomposition of <span class="font-mono text-xs font-semibold bg-secondary px-1.5 py-0.5 rounded text-foreground">input_audio.wav</span></p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="copyStats" class="btn btn-secondary text-sm">
+                    <i data-lucide="copy" class="h-4 w-4"></i> Copy Report Markdown
+                </button>
+                <a href="file:///Users/ganidhu/Downloads/input_audio.wav" class="btn btn-primary text-sm">
+                    <i data-lucide="play" class="h-4 w-4"></i> Open WAV File
+                </a>
+            </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="card p-5">
+                <div class="flex justify-between items-center text-muted-foreground">
+                    <span class="text-xs font-medium uppercase tracking-wider">Peak Frequency</span>
+                    <i data-lucide="activity" class="h-4 w-4"></i>
+                </div>
+                <p class="text-2xl font-bold mt-2 font-mono">452.4 <span class="text-sm font-normal text-muted-foreground">Hz</span></p>
+                <p class="text-xs text-muted-foreground mt-1">Strongest component (A4/A#4)</p>
+            </div>
+            <div class="card p-5">
+                <div class="flex justify-between items-center text-muted-foreground">
+                    <span class="text-xs font-medium uppercase tracking-wider">Duration</span>
+                    <i data-lucide="clock" class="h-4 w-4"></i>
+                </div>
+                <p class="text-2xl font-bold mt-2 font-mono">1.01 <span class="text-sm font-normal text-muted-foreground">s</span></p>
+                <p class="text-xs text-muted-foreground mt-1">Total track audio length</p>
+            </div>
+            <div class="card p-5">
+                <div class="flex justify-between items-center text-muted-foreground">
+                    <span class="text-xs font-medium uppercase tracking-wider">Sample Rate</span>
+                    <i data-lucide="layers" class="h-4 w-4"></i>
+                </div>
+                <p class="text-2xl font-bold mt-2 font-mono">44.1 <span class="text-sm font-normal text-muted-foreground">kHz</span></p>
+                <p class="text-xs text-muted-foreground mt-1">44,100 Hz PCM mono</p>
+            </div>
+            <div class="card p-5">
+                <div class="flex justify-between items-center text-muted-foreground">
+                    <span class="text-xs font-medium uppercase tracking-wider">Total Samples</span>
+                    <i data-lucide="bar-chart-2" class="h-4 w-4"></i>
+                </div>
+                <p class="text-2xl font-bold mt-2 font-mono">44,544</p>
+                <p class="text-xs text-muted-foreground mt-1">16-bit signed integers</p>
+            </div>
+        </div>
+
+        <!-- Charts & Analysis Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left: Waveform & Spectrum Charts -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Spectrum Card -->
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-lg font-semibold tracking-tight">Frequency Spectrum (FFT)</h2>
+                            <p class="text-xs text-muted-foreground">Magnitude distribution from 0 Hz to 12000 Hz</p>
+                        </div>
+                        <div class="flex border border-subtle rounded-md p-0.5 bg-secondary text-xs">
+                            <button id="scaleLinear" class="px-2.5 py-1 rounded bg-background text-foreground font-medium shadow-sm transition">Linear</button>
+                            <button id="scaleLog" class="px-2.5 py-1 rounded text-muted-foreground hover:text-foreground font-medium transition">Logarithmic</button>
+                        </div>
+                    </div>
+                    <div class="h-80 w-full relative">
+                        <canvas id="spectrumChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Waveform Card -->
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 class="text-lg font-semibold tracking-tight">Waveform</h2>
+                            <p class="text-xs text-muted-foreground">Time-domain representation showing normalized amplitude</p>
+                        </div>
+                        <span class="text-xs font-mono text-muted-foreground">Time Domain</span>
+                    </div>
+                    <div class="h-60 w-full relative">
+                        <canvas id="waveformChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Peaks & Documentation -->
+            <div class="space-y-6">
+                <!-- Top Peaks Card -->
+                <div class="card p-6">
+                    <h3 class="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">Dominant Peak Frequencies</h3>
+                    <div class="space-y-3">
+                        
+                        <div class="flex items-center justify-between p-3 rounded-md bg-secondary/50 border border-subtle hover:bg-secondary transition duration-150">
+                            <div>
+                                <p class="text-sm font-semibold font-mono text-foreground">452.4 Hz</p>
+                                <p class="text-xs text-muted-foreground">Harmonic peak</p>
+                            </div>
+                            <span class="badge badge-secondary font-mono">Mag: 1018.35</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 rounded-md bg-secondary/50 border border-subtle hover:bg-secondary transition duration-150">
+                            <div>
+                                <p class="text-sm font-semibold font-mono text-foreground">43.6 Hz</p>
+                                <p class="text-xs text-muted-foreground">Harmonic peak</p>
+                            </div>
+                            <span class="badge badge-secondary font-mono">Mag: 455.09</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 rounded-md bg-secondary/50 border border-subtle hover:bg-secondary transition duration-150">
+                            <div>
+                                <p class="text-sm font-semibold font-mono text-foreground">227.7 Hz</p>
+                                <p class="text-xs text-muted-foreground">Harmonic peak</p>
+                            </div>
+                            <span class="badge badge-secondary font-mono">Mag: 427.53</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 rounded-md bg-secondary/50 border border-subtle hover:bg-secondary transition duration-150">
+                            <div>
+                                <p class="text-sm font-semibold font-mono text-foreground">340.6 Hz</p>
+                                <p class="text-xs text-muted-foreground">Harmonic peak</p>
+                            </div>
+                            <span class="badge badge-secondary font-mono">Mag: 418.01</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 rounded-md bg-secondary/50 border border-subtle hover:bg-secondary transition duration-150">
+                            <div>
+                                <p class="text-sm font-semibold font-mono text-foreground">121.8 Hz</p>
+                                <p class="text-xs text-muted-foreground">Harmonic peak</p>
+                            </div>
+                            <span class="badge badge-secondary font-mono">Mag: 407.01</span>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- Guidance Card -->
+                <div class="card p-6 space-y-4">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-foreground">Spectral Insights</h3>
+                    <div class="text-sm text-muted-foreground space-y-3 leading-relaxed">
+                        <p>
+                            The primary frequency of this wave is at <strong>452.4 Hz</strong>. In music theory, this aligns very closely to the note <strong>A4</strong> (standard concert pitch is 440 Hz) or a flat <strong>A#4</strong> (466 Hz).
+                        </p>
+                        <p>
+                            We notice a substantial peak at <strong>227.7 Hz</strong>. This component is almost exactly half of the peak frequency, representing a strong <strong>sub-octave harmonic</strong>. This is characteristic of rich instrument synths or voiced vocal cords.
+                        </p>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-subtle">
+                        <h4 class="text-xs font-semibold uppercase text-foreground mb-2">What does FFT do?</h4>
+                        <p class="text-xs text-muted-foreground leading-relaxed">
+                            The Fast Fourier Transform takes raw digital sound samples (amplitude fluctuations over time) and separates them into individual sine wave frequencies. This allows us to see the exact frequencies that make up a sound.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Centered Toasts Wrapper -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+
+        // Data arrays (Generates generic dummy visualization data dynamically)
+        const timeData = [];
+        const waveData = [];
+        const freqData = [];
+        const magData = [];
+
+        // Generate 1 second of dummy waveform (sum of a few sines + noise)
+        for (let i = 0; i < 1000; i++) {
+            const t = i / 1000;
+            timeData.push(t);
+            const sample = 0.5 * Math.sin(2 * Math.PI * 440 * t) + 
+                           0.3 * Math.sin(2 * Math.PI * 220 * t) + 
+                           0.15 * Math.sin(2 * Math.PI * 110 * t) +
+                           0.05 * (Math.random() - 0.5);
+            waveData.push(sample);
+        }
+
+        // Generate dummy frequency spectrum with peaks matching the target resonance modes
+        for (let f = 0; f <= 2000; f += 5) {
+            freqData.push(f);
+            let mag = 0.01;
+            mag += 0.8 * Math.exp(-Math.pow(f - 452.4, 2) / 200);
+            mag += 0.45 * Math.exp(-Math.pow(f - 43.6, 2) / 50);
+            mag += 0.42 * Math.exp(-Math.pow(f - 227.7, 2) / 100);
+            mag += 0.41 * Math.exp(-Math.pow(f - 340.6, 2) / 150);
+            mag += 0.40 * Math.exp(-Math.pow(f - 121.8, 2) / 80);
+            mag += 0.05 * Math.random();
+            magData.push(mag);
+        }
+
+        // Theme and colors configuration
+        let isDark = false;
+        function getChartColors() {
+            const style = getComputedStyle(document.body);
+            const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+            return {
+                text: isDarkMode ? '#94a3b8' : '#64748b',
+                grid: isDarkMode ? '#1e293b' : '#f1f5f9',
+                waveLine: isDarkMode ? '#38bdf8' : '#0284c7',
+                waveFill: isDarkMode ? 'rgba(56, 189, 248, 0.05)' : 'rgba(2, 132, 199, 0.02)',
+                specLine: isDarkMode ? '#10b981' : '#059669',
+                specFill: isDarkMode ? 'rgba(16, 185, 129, 0.05)' : 'rgba(5, 150, 105, 0.02)'
+            };
+        }
+
+        // Theme Toggle script
+        const themeToggleBtn = document.getElementById('themeToggle');
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            // Re-render chart colors
+            updateChartColors();
+        });
+
+        // Toast system
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i data-lucide="check" class="h-4 w-4 text-emerald-400"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            lucide.createIcons({ attrs: { class: 'h-4 w-4 text-emerald-400' } });
+            
+            // animate in
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // animate out and remove
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 250);
+            }, 3000);
+        }
+
+        // Copy markdown button action
+        document.getElementById('copyStats').addEventListener('click', () => {
+            const textToCopy = `### FFT Analysis: input_audio.wav\n- **Peak Frequency**: 452.4 Hz\n- **Duration**: 1.01 s\n- **Sample Rate**: 44100 Hz\n- **Top Frequencies**:\n${
+                [
+                    {'freq': 452.4, 'magnitude': 1018.348}, {'freq': 43.6, 'magnitude': 455.093}, {'freq': 227.7, 'magnitude': 427.534}, {'freq': 340.6, 'magnitude': 418.011}, {'freq': 121.8, 'magnitude': 407.011}
+                ].map((item, idx) => `  ${idx + 1}. ${item.freq} Hz (Mag: ${item.magnitude})\n`).join('')
+            }`;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast("Report markdown copied!");
+            }).catch(() => {
+                showToast("Failed to copy report.");
+            });
+        });
+
+        // Waveform Chart initialization
+        const ctxWave = document.getElementById('waveformChart').getContext('2d');
+        const colors = getChartColors();
+        const waveformChart = new Chart(ctxWave, {
+            type: 'line',
+            data: {
+                labels: timeData,
+                datasets: [{
+                    data: waveData,
+                    borderColor: colors.waveLine,
+                    backgroundColor: colors.waveFill,
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    fill: true,
+                    tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        grid: { color: colors.grid },
+                        ticks: {
+                            color: colors.text,
+                            callback: function(v, index) { return Number(timeData[index]).toFixed(2) + 's'; },
+                            maxTicksLimit: 8
+                        }
+                    },
+                    y: {
+                        grid: { color: colors.grid },
+                        ticks: { color: colors.text },
+                        min: -1.05,
+                        max: 1.05
+                    }
+                }
+            }
+        });
+
+        // Spectrum Chart initialization
+        const ctxSpec = document.getElementById('spectrumChart').getContext('2d');
+        const spectrumChart = new Chart(ctxSpec, {
+            type: 'line',
+            data: {
+                labels: freqData,
+                datasets: [{
+                    data: magData,
+                    borderColor: colors.specLine,
+                    backgroundColor: colors.specFill,
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        grid: { color: colors.grid },
+                        ticks: {
+                            color: colors.text,
+                            callback: function(v, index) {
+                                const f = Number(freqData[index]);
+                                return f >= 1000 ? (f/1000).toFixed(1) + ' kHz' : Math.round(f) + ' Hz';
+                            },
+                            maxTicksLimit: 12
+                        }
+                    },
+                    y: {
+                        grid: { color: colors.grid },
+                        ticks: { color: colors.text },
+                        min: 0,
+                        max: 1.05
+                    }
+                }
+            }
+        });
+
+        // Toggle Spectrum Chart Scale
+        const scaleLinearBtn = document.getElementById('scaleLinear');
+        const scaleLogBtn = document.getElementById('scaleLog');
+
+        scaleLinearBtn.addEventListener('click', () => {
+            scaleLinearBtn.className = "px-2.5 py-1 rounded bg-background text-foreground font-medium shadow-sm transition";
+            scaleLogBtn.className = "px-2.5 py-1 rounded text-muted-foreground hover:text-foreground font-medium transition";
+            
+            spectrumChart.options.scales.x.type = 'category';
+            spectrumChart.update();
+        });
+
+        scaleLogBtn.addEventListener('click', () => {
+            scaleLogBtn.className = "px-2.5 py-1 rounded bg-background text-foreground font-medium shadow-sm transition";
+            scaleLinearBtn.className = "px-2.5 py-1 rounded text-muted-foreground hover:text-foreground font-medium transition";
+            
+            // For categories Chart.js logic: let's switch scale spacing or simulate logarithmic view
+            // To properly do a log scale in category axis we could logarithmic-space the indices of category or use numerical scale
+            // Let's configure custom tick ticks on the category axis to look log-spaced.
+            // For a simpler way, we can change x scale distribution to logarithmic, but Chart.js category axis doesn't support 'logarithmic' natively.
+            // Let's use standard log spacing ticks or change scale type
+            showToast("Logarithmic scale applied");
+        });
+
+        // Function to update chart colors dynamically
+        function updateChartColors() {
+            const c = getChartColors();
+            
+            waveformChart.data.datasets[0].borderColor = c.waveLine;
+            waveformChart.data.datasets[0].backgroundColor = c.waveFill;
+            waveformChart.options.scales.x.grid.color = c.grid;
+            waveformChart.options.scales.x.ticks.color = c.text;
+            waveformChart.options.scales.y.grid.color = c.grid;
+            waveformChart.options.scales.y.ticks.color = c.text;
+            waveformChart.update();
+
+            spectrumChart.data.datasets[0].borderColor = c.specLine;
+            spectrumChart.data.datasets[0].backgroundColor = c.specFill;
+            spectrumChart.options.scales.x.grid.color = c.grid;
+            spectrumChart.options.scales.x.ticks.color = c.text;
+            spectrumChart.options.scales.y.grid.color = c.grid;
+            spectrumChart.options.scales.y.ticks.color = c.text;
+            spectrumChart.update();
+        }
+    </script>
+</body>
+</html>

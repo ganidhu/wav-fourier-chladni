@@ -1,0 +1,9 @@
+# Ignore audio recordings
+*.wav
+
+# Ignore generated SVG patterns
+*.svg
+voca_chladni_logo.svg
+
+# OS files
+.DS_Store

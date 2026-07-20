@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chladni Plate Simulator - Voca Sound Signature</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap');
+        
+        :root {
+            --background: 240 10% 3.9%;
+            --foreground: 0 0% 98%;
+            --card: 240 10% 3.9%;
+            --card-foreground: 0 0% 98%;
+            --primary: 0 0% 98%;
+            --primary-foreground: 240 5.9% 10%;
+            --secondary: 240 3.7% 15.9%;
+            --secondary-foreground: 0 0% 98%;
+            --muted: 240 3.7% 15.9%;
+            --muted-foreground: 240 5% 64.9%;
+            --accent: 240 3.7% 15.9%;
+            --accent-foreground: 0 0% 98%;
+            --border: 240 3.7% 15.9%;
+            --radius: 0.5rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+
+        .card {
+            background-color: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: all 150ms ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            border: 1px solid hsl(var(--border));
+        }
+        .btn-secondary:hover {
+            background-color: hsl(var(--accent));
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: hsl(var(--foreground));
+            border: 1px solid hsl(var(--border));
+        }
+        .btn-outline:hover {
+            background-color: hsl(var(--secondary));
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Chladni Plate Canvas styling */
+        #plateCanvas {
+            background-color: #0c0c0e;
+            border: 4px solid #27272a;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: all 250ms ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -0.5rem);
+        }
+    </style>
+</head>
+<body class="min-h-screen py-8 px-4 md:px-8">
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <!-- Navigation Shell -->
+        <header class="flex justify-between items-center border-b border-zinc-800 pb-4">
+            <div class="flex items-center gap-2">
+                <div class="p-2 rounded-md bg-zinc-800 text-zinc-100">
+                    <i data-lucide="waves" class="h-5 w-5"></i>
+                </div>
+                <span class="text-sm font-semibold tracking-tight font-mono text-zinc-100">Voca Sound Signature Labs</span>
+            </div>
+            <span class="text-xs font-mono text-zinc-500">Chladni plate (Square geometry)</span>
+        </header>
+
+        <!-- Page Title -->
+        <div>
+            <h1 class="text-3xl font-semibold tracking-tight">Chladni Plate Pattern Generator</h1>
+            <p class="text-sm text-zinc-400 mt-1">Superimposing resonant plate modes corresponding to <span class="font-mono text-xs bg-zinc-800 text-zinc-200 px-1 py-0.5 rounded">input_audio.wav</span></p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left: Simulation Control -->
+            <div class="space-y-6">
+                <div class="card p-6 space-y-6">
+                    <div>
+                        <h2 class="text-lg font-semibold">Resonant Modes Selector</h2>
+                        <p class="text-xs text-zinc-400 mt-1">Enable/disable frequencies and weight them by their amplitudes</p>
+                    </div>
+
+                    <!-- Mode Selectors List -->
+                    <div class="space-y-4" id="modesContainer">
+                        <!-- Mode 1 -->
+                        <div class="flex items-center justify-between p-3 bg-zinc-900/60 rounded-md border border-zinc-800">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="mode0" checked class="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-zinc-200 focus:ring-0">
+                                <div>
+                                    <label for="mode0" class="text-sm font-semibold block cursor-pointer">Peak 1 (452.4 Hz)</label>
+                                    <span class="text-xs text-zinc-500">Mode (6, 4) • Major Harmonic</span>
+                                </div>
+                            </div>
+                            <span class="text-xs font-mono text-emerald-400 font-semibold">Mag: 1.00</span>
+                        </div>
+                        <!-- Mode 2 -->
+                        <div class="flex items-center justify-between p-3 bg-zinc-900/60 rounded-md border border-zinc-800">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="mode1" checked class="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-zinc-200 focus:ring-0">
+                                <div>
+                                    <label for="mode1" class="text-sm font-semibold block cursor-pointer">Peak 2 (43.6 Hz)</label>
+                                    <span class="text-xs text-zinc-500">Mode (2, 1) • Sub-bass</span>
+                                </div>
+                            </div>
+                            <span class="text-xs font-mono text-zinc-400 font-semibold">Mag: 0.45</span>
+                        </div>
+                        <!-- Mode 3 -->
+                        <div class="flex items-center justify-between p-3 bg-zinc-900/60 rounded-md border border-zinc-800">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="mode2" checked class="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-zinc-200 focus:ring-0">
+                                <div>
+                                    <label for="mode2" class="text-sm font-semibold block cursor-pointer">Peak 3 (227.7 Hz)</label>
+                                    <span class="text-xs text-zinc-500">Mode (4, 3) • Sub-octave</span>
+                                </div>
+                            </div>
+                            <span class="text-xs font-mono text-zinc-400 font-semibold">Mag: 0.42</span>
+                        </div>
+                        <!-- Mode 4 -->
+                        <div class="flex items-center justify-between p-3 bg-zinc-900/60 rounded-md border border-zinc-800">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="mode3" checked class="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-zinc-200 focus:ring-0">
+                                <div>
+                                    <label for="mode3" class="text-sm font-semibold block cursor-pointer">Peak 4 (340.6 Hz)</label>
+                                    <span class="text-xs text-zinc-500">Mode (6, 1) • High Harmonic</span>
+                                </div>
+                            </div>
+                            <span class="text-xs font-mono text-zinc-400 font-semibold">Mag: 0.41</span>
+                        </div>
+                        <!-- Mode 5 -->
+                        <div class="flex items-center justify-between p-3 bg-zinc-900/60 rounded-md border border-zinc-800">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="mode4" checked class="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-zinc-200 focus:ring-0">
+                                <div>
+                                    <label for="mode4" class="text-sm font-semibold block cursor-pointer">Peak 5 (121.8 Hz)</label>
+                                    <span class="text-xs text-zinc-500">Mode (3, 2) • Mid Harmonic</span>
+                                </div>
+                            </div>
+                            <span class="text-xs font-mono text-zinc-400 font-semibold">Mag: 0.40</span>
+                        </div>
+                    </div>
+
+                    <!-- Parameter Adjusters -->
+                    <div class="space-y-4 pt-4 border-t border-zinc-800">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium">Vibration Amplitude</span>
+                                <span id="ampVal" class="font-mono text-zinc-400 text-xs">2.0</span>
+                            </div>
+                            <input type="range" id="vibeAmp" min="0.5" max="5.0" step="0.1" value="2.0" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium">Sand Particle Count</span>
+                                <span id="sandVal" class="font-mono text-zinc-400 text-xs">15,000</span>
+                            </div>
+                            <input type="range" id="sandCount" min="3000" max="30000" step="1000" value="15000" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white">
+                        </div>
+                        <div class="flex items-center justify-between text-sm py-2">
+                            <span class="font-medium">Plate Symmetry (b = -1)</span>
+                            <input type="checkbox" id="plateSymm" class="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-zinc-200 focus:ring-0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center: Interactive Plate Canvas -->
+            <div class="lg:col-span-2 space-y-6 flex flex-col items-center">
+                
+                <!-- Plate Board -->
+                <div class="w-full flex justify-center items-center p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl relative">
+                    <canvas id="plateCanvas" width="512" height="512" class="max-w-full aspect-square"></canvas>
+                </div>
+
+                <!-- Simulation Action Controls -->
+                <div class="flex flex-wrap gap-4 justify-center w-full">
+                    <button id="btnSynthesize" class="btn btn-secondary text-sm">
+                        <i data-lucide="volume-2" class="h-4 w-4"></i> Play Plate Tone
+                    </button>
+                    <button id="btnResetSand" class="btn btn-outline text-sm">
+                        <i data-lucide="refresh-cw" class="h-4 w-4"></i> Scatter Sand
+                    </button>
+                    <button id="btnExportPNG" class="btn btn-outline text-sm">
+                        <i data-lucide="image" class="h-4 w-4"></i> Export PNG
+                    </button>
+                    <button id="btnExportSVG" class="btn btn-primary text-sm">
+                        <i data-lucide="download" class="h-4 w-4"></i> Export SVG (Vector)
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">
+        <i data-lucide="check" class="h-4 w-4 text-emerald-400"></i>
+        <span id="toastMsg">Exported successfully!</span>
+    </div>
+
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+
+        // Canvas & Setup
+        const canvas = document.getElementById('plateCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Waveform/Modes data from FFT
+        const modes = [
+            { n: 6, m: 4, weight: 1.0,  freq: 452.4 }, // Peak 1
+            { n: 2, m: 1, weight: 0.45, freq: 43.6  }, // Peak 2
+            { n: 4, m: 3, weight: 0.42, freq: 227.7 }, // Peak 3
+            { n: 6, m: 1, weight: 0.41, freq: 340.6 }, // Peak 4
+            { n: 3, m: 2, weight: 0.40, freq: 121.8 }  // Peak 5
+        ];
+
+        // Simulator parameters
+        let numParticles = parseInt(document.getElementById('sandCount').value);
+        let vibrationAmplitude = parseFloat(document.getElementById('vibeAmp').value);
+        let useSymmetricB = 1; // b value in: sin(n pi x)sin(m pi y) + b sin(m pi x)sin(n pi y)
+        let particles = [];
+
+        // Setup particles
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                // Random position on the plate: mapped to [-1.0, 1.0]
+                this.x = Math.random() * 2 - 1;
+                this.y = Math.random() * 2 - 1;
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        // Chladni amplitude calculation at point (x, y)
+        // x, y coordinates are in range [-1.0, 1.0]
+        function getChladniAmplitude(x, y) {
+            let totalAmp = 0;
+            
+            // Go through each mode check state
+            for (let i = 0; i < modes.length; i++) {
+                const cb = document.getElementById(`mode${i}`);
+                if (!cb.checked) continue;
+
+                const mode = modes[i];
+                const n = mode.n;
+                const m = mode.m;
+                const w = mode.weight;
+
+                // Standard Chladni boundary function for a free square plate
+                const term1 = Math.sin(n * Math.PI * (x + 1) / 2) * Math.sin(m * Math.PI * (y + 1) / 2);
+                const term2 = Math.sin(m * Math.PI * (x + 1) / 2) * Math.sin(n * Math.PI * (y + 1) / 2);
+                
+                totalAmp += w * (term1 + useSymmetricB * term2);
+            }
+            
+            return totalAmp;
+        }
+
+        // Particle random-walk simulation
+        // Particles move randomly with step size proportional to local amplitude.
+        // As a result, they settle where local amplitude is close to zero (nodal lines).
+        function updateParticles() {
+            // Step scaling factor
+            const baseStep = 0.02 * vibrationAmplitude;
+
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                
+                // Calculate current vibration amplitude at particle position
+                const amp = getChladniAmplitude(p.x, p.y);
+                const absAmp = Math.abs(amp);
+
+                // Step size is proportional to amplitude
+                const step = baseStep * absAmp;
+
+                if (absAmp > 0.01) {
+                    // Random displacement
+                    p.x += (Math.random() * 2 - 1) * step;
+                    p.y += (Math.random() * 2 - 1) * step;
+
+                    // Keep inside bounds or wrap
+                    if (p.x < -1) p.x = -1;
+                    if (p.x > 1) p.x = 1;
+                    if (p.y < -1) p.y = -1;
+                    if (p.y > 1) p.y = 1;
+                } else {
+                    // Tiny micro-jitter inside nodal line
+                    p.x += (Math.random() * 2 - 1) * 0.0005;
+                    p.y += (Math.random() * 2 - 1) * 0.0005;
+                }
+            }
+        }
+
+        // Draw loop
+        function draw() {
+            // Translucent black overlay to create slight trails (optional, here we clear clean)
+            ctx.fillStyle = '#0c0c0e';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw center node pivot point
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, 24, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw particles (sand grains)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                // Map coordinates [-1.0, 1.0] to canvas pixel space [0, width]
+                const px = (p.x + 1) * 0.5 * width;
+                const py = (p.y + 1) * 0.5 * height;
+
+                ctx.fillRect(px, py, 1.5, 1.5);
+            }
+        }
+
+        function loop() {
+            updateParticles();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        // Initialize and launch
+        initParticles();
+        loop();
+
+        // UI Event Listeners
+        document.getElementById('btnResetSand').addEventListener('click', () => {
+            initParticles();
+            showToastMessage("Sand scattered randomly");
+        });
+
+        document.getElementById('sandCount').addEventListener('input', (e) => {
+            numParticles = parseInt(e.target.value);
+            document.getElementById('sandVal').innerText = numParticles.toLocaleString();
+            initParticles();
+        });
+
+        document.getElementById('vibeAmp').addEventListener('input', (e) => {
+            vibrationAmplitude = parseFloat(e.target.value);
+            document.getElementById('ampVal').innerText = vibrationAmplitude.toFixed(1);
+        });
+
+        document.getElementById('plateSymm').addEventListener('change', (e) => {
+            useSymmetricB = e.target.checked ? -1 : 1;
+            initParticles();
+        });
+
+        // Toast notifications
+        function showToastMessage(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // Audio Synthesis (Web Audio API)
+        let audioCtx = null;
+        let oscillators = [];
+        let gainNode = null;
+        let isPlaying = false;
+
+        document.getElementById('btnSynthesize').addEventListener('click', () => {
+            const btn = document.getElementById('btnSynthesize');
+            
+            if (isPlaying) {
+                // Stop audio
+                oscillators.forEach(osc => osc.stop());
+                oscillators = [];
+                isPlaying = false;
+                btn.innerHTML = `<i data-lucide="volume-2" class="h-4 w-4"></i> Play Plate Tone`;
+                lucide.createIcons();
+                showToastMessage("Audio stopped");
+                return;
+            }
+
+            // Create Audio Context
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0.0, audioCtx.currentTime); // fade in
+            
+            // Loop through each active mode and add a sine oscillator
+            let activeOscs = 0;
+            for (let i = 0; i < modes.length; i++) {
+                const cb = document.getElementById(`mode${i}`);
+                if (!cb.checked) continue;
+
+                const osc = audioCtx.createOscillator();
+                const oscGain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(modes[i].freq, audioCtx.currentTime);
+                
+                // Weight the volume by amplitude magnitude
+                oscGain.gain.setValueAtTime(modes[i].weight * 0.15, audioCtx.currentTime);
+                
+                osc.connect(oscGain);
+                oscGain.connect(gainNode);
+                osc.start();
+                oscillators.push(osc);
+                activeOscs++;
+            }
+
+            if (activeOscs === 0) {
+                showToastMessage("No active modes to play!");
+                return;
+            }
+
+            gainNode.connect(audioCtx.destination);
+            gainNode.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.1); // fade in
+
+            isPlaying = true;
+            btn.innerHTML = `<i data-lucide="volume-x" class="h-4 w-4"></i> Stop Plate Tone`;
+            lucide.createIcons();
+            showToastMessage("Synthesizing resonant chord...");
+        });
+
+        // Export as High-Res PNG
+        document.getElementById('btnExportPNG').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'voca_chladni_logo.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToastMessage("PNG downloaded successfully!");
+        });
+
+        // Export as Vector SVG
+        document.getElementById('btnExportSVG').addEventListener('click', () => {
+            // Generate a vector layout of the sand points
+            let svgHeader = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n`;
+            svgHeader += `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" style="background:#0c0c0e;">\n`;
+            
+            // Node core pivot
+            svgHeader += `  <circle cx="256" cy="256" r="24" fill="#ffffff" fill-opacity="0.04" />\n`;
+            
+            // Add particles as circles
+            let svgContent = '';
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                const px = ((p.x + 1) * 0.5 * 512).toFixed(1);
+                const py = ((p.y + 1) * 0.5 * 512).toFixed(1);
+                svgContent += `  <circle cx="${px}" cy="${py}" r="0.85" fill="#ffffff" fill-opacity="0.85" />\n`;
+            }
+            
+            const svgFooter = `</svg>`;
+            const svgString = svgHeader + svgContent + svgFooter;
+            
+            const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.download = 'voca_chladni_logo.svg';
+            link.href = url;
+            link.click();
+            
+            // Clean up
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+            showToastMessage("Vector SVG downloaded!");
+        });
+    </script>
+</body>
+</html>
