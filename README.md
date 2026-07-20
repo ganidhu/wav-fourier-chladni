@@ -45,19 +45,32 @@ Where:
 
 Since the core pipeline runs entirely on the Python standard library, there are **no third-party Python libraries** to install.
 
-### 1. Install via pip
-You can install the package directly as a global CLI tool from the repository folder:
+### 1. Global Installation
+You can install the tool globally from PyPI using one of the following methods:
+
+#### Option A: Standard pip
 ```bash
-pip install .
+pip install wav-fourier-chladni --break-system-packages
+```
+*(Note: The `--break-system-packages` flag is required on macOS Homebrew Python installations to allow global CLI scripts).*
+
+#### Option B: Using pipx (Recommended for macOS/Linux)
+`pipx` automatically manages isolated virtual environments for CLI tools:
+```bash
+# Install pipx (if not already installed)
+brew install pipx
+
+# Install the package
+pipx install wav-fourier-chladni
 ```
 
-Once installed, you can launch the pipeline from anywhere using the global command:
+Once installed via either option, launch the program globally from any directory:
 ```bash
 wav-fourier-chladni
 ```
 
 ### 2. Alternative: Run the source script directly
-If you do not want to install it globally, you can execute the script directly from the source directory:
+If you do not want to install it globally, you can clone the repository and run the script directly:
 ```bash
 python3 wav_fourier_chladni/cli.py
 ```
