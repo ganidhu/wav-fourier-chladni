@@ -465,8 +465,11 @@ def run_pipeline():
                 print(f"\n  {YELLOW}Goodbye!{RESET}\n")
                 sys.exit(0)
 
-if __name__ == "__main__":
+def main():
     try:
         run_pipeline()
     except KeyboardInterrupt:
         print(f"\n\n  {YELLOW}Pipeline terminated. Goodbye!{RESET}\n")
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wav-fourier-chladni"
+version = "1.0.0"
+authors = [
+    { name = "ganidhu", email = "ganidhu@example.com" }
+]
+description = "Generate Chladni plate resonant pattern signatures from WAV audio waveforms using Fourier peak frequency estimation"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/ganidhu/wav-fourier-chladni"
+
+[project.scripts]
+wav-fourier-chladni = "wav_fourier_chladni.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["wav_fourier_chladni*"]
+
+[tool.setuptools.package-data]
+wav_fourier_chladni = ["*.html", "*.md"]

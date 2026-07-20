@@ -43,27 +43,31 @@ Where:
 
 ## Installation & Running
 
-Since the core pipeline runs entirely on the Python standard library, there are **no external Python dependencies** to install (no `pip install` required).
+Since the core pipeline runs entirely on the Python standard library, there are **no third-party Python libraries** to install.
 
-### 1. Clone the Repository
+### 1. Install via pip
+You can install the package directly as a global CLI tool from the repository folder:
 ```bash
-git clone https://github.com/ganidhu/wav-fourier-chladni.git
-cd wav-fourier-chladni
+pip install .
 ```
 
-### 2. Prerequisites (Optional)
-To run the core analysis, you only need **Python 3** installed.
+Once installed, you can launch the pipeline from anywhere using the global command:
+```bash
+wav-fourier-chladni
+```
+
+### 2. Alternative: Run the source script directly
+If you do not want to install it globally, you can execute the script directly from the source directory:
+```bash
+python3 wav_fourier_chladni/cli.py
+```
+
+### 3. Prerequisites (Optional)
+To run the core analysis and visualizers, you only need **Python 3** installed.
 
 If you wish to use the **live microphone recording** feature:
 * **macOS**: `brew install sox` or ensure `ffmpeg` is in your system path.
 * **Linux**: `sudo apt install alsa-utils` (for `arecord`) or `sox`.
-
-### 3. Run
-Start the interactive terminal program:
-
-```bash
-python3 voca-spectral.py
-```
 
 The script will guide you through:
 1. **Audio Selection**: Pick a WAV file using a native macOS window picker or record live from the microphone.

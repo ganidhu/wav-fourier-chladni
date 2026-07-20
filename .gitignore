@@ -5,5 +5,10 @@
 *.svg
 voca_chladni_logo.svg
 
+# Python packaging artifacts
+*.egg-info/
+build/
+dist/
+
 # OS files
 .DS_Store
