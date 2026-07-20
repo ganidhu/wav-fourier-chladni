@@ -2,9 +2,7 @@
 
 > An interactive tool to analyze WAV audio files, perform discrete Fourier analysis to extract dominant peak frequencies, and map those peaks to physical resonant modes on a square Chladni vibrating plate.
 
-This repository is a fork of [Fourier-from-WAV-file](https://github.com/KyleSmith19091/Fourier-from-WAV-file), extended to support interactive TUI workflows, macOS native file dialogs, SVG design exports, and WebGL-powered interactive HTML dashboards.
-
-For the mathematical background of plate vibration models, see [this paper on Chladni Plates](https://ddonle.com/docs/Chladni_Plate.pdf).
+For the mathematical background of plate vibration models, see [this paper](https://ddonle.com/docs/Chladni_Plate.pdf) on Chladni Plates.
 
 ## Project Structure
 
@@ -63,3 +61,24 @@ The script will guide you through:
 1. **Audio Selection**: Pick a WAV file using a native macOS window picker or record live from the microphone.
 2. **Analysis**: Performs the discrete Fourier calculations.
 3. **Resonant Signatures**: Renders an ASCII art preview of the pattern in the terminal, and lets you choose to export SVG files or HTML dashboards.
+
+
+## 🤝 Contributing
+
+Got ideas? Found a bug?
+
+PRs and issues are very welcome! This is a community tool and it gets better when more people chip in. Even small improvements — better selectors, new step actions, docs fixes — make a real difference.
+
+[Open an issue](https://github.com/ganidhu/wav-fourier-chladni/issues) or just submit a PR. Let's build it together. 🙌
+
+---
+
+## 📄 License
+
+MIT
+
+---
+
+<p align="center">
+  <sub>Built by Ganidhu and Baymax</sub>
+</p>
