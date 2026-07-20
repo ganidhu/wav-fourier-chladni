@@ -1,4 +1,4 @@
-# Chladni Pattern Generator (WAV to Fourier)
+# WAV → Fourier → Chladni Pattern
 
 An interactive tool to analyze WAV audio files, perform discrete Fourier analysis to extract dominant peak frequencies, and map those peaks to physical resonant modes on a square Chladni vibrating plate.
 
