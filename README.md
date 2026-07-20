@@ -45,8 +45,14 @@ Where:
 
 Since the core pipeline runs entirely on the Python standard library, there are **no third-party Python libraries** to install.
 
-### 1. Global Installation
-You can install the tool globally from PyPI using one of the following methods:
+### 1. One-Line Installer (macOS & Linux)
+You can install and verify the tool globally in one line using `curl`:
+```bash
+curl -fsSL https://raw.githubusercontent.com/ganidhu/wav-fourier-chladni/master/install.sh | bash
+```
+
+### 2. Manual Global Installation
+You can also install the tool manually from PyPI using one of the following methods:
 
 #### Option A: Standard pip
 ```bash
