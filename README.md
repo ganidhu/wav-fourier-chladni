@@ -2,6 +2,10 @@
 
 > An interactive tool to analyze WAV audio files, perform discrete Fourier analysis to extract dominant peak frequencies, and map those peaks to physical resonant modes on a square Chladni vibrating plate.
 
+```bash
+curl -fsSL https://raw.githubusercontent.com/ganidhu/wav-fourier-chladni/master/install.sh | bash
+```
+
 For the mathematical background of plate vibration models, see [this paper](https://ddonle.com/docs/Chladni_Plate.pdf) on Chladni Plates.
 
 ## Project Structure
