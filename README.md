@@ -43,14 +43,22 @@ Where:
 
 ## Installation & Running
 
-### Prerequisites
-To run the core analysis, you only need **Python 3**.
+Since the core pipeline runs entirely on the Python standard library, there are **no external Python dependencies** to install (no `pip install` required).
 
-If you wish to use the microphone recording feature:
-* **macOS**: `brew install sox` or ensure `ffmpeg` is installed.
+### 1. Clone the Repository
+```bash
+git clone https://github.com/ganidhu/wav-fourier-chladni.git
+cd wav-fourier-chladni
+```
+
+### 2. Prerequisites (Optional)
+To run the core analysis, you only need **Python 3** installed.
+
+If you wish to use the **live microphone recording** feature:
+* **macOS**: `brew install sox` or ensure `ffmpeg` is in your system path.
 * **Linux**: `sudo apt install alsa-utils` (for `arecord`) or `sox`.
 
-### Usage
+### 3. Run
 Start the interactive terminal program:
 
 ```bash
