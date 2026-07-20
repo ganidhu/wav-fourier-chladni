@@ -88,9 +88,22 @@ python3 wav_fourier_chladni/cli.py
 ### 3. Prerequisites (Optional)
 To run the core analysis and visualizers, you only need **Python 3** installed.
 
-If you wish to use the **live microphone recording** feature:
 * **macOS**: `brew install sox` or ensure `ffmpeg` is in your system path.
 * **Linux**: `sudo apt install alsa-utils` (for `arecord`) or `sox`.
+
+### 4. Uninstallation
+To remove the package from your system:
+
+* If installed via **pipx**:
+  ```bash
+  pipx uninstall wav-fourier-chladni
+  ```
+* If installed via **pip**:
+  ```bash
+  pip3 uninstall wav-fourier-chladni --break-system-packages
+  ```
+
+---
 
 The script will guide you through:
 1. **Audio Selection**: Pick a WAV file using a native macOS window picker or record live from the microphone.
