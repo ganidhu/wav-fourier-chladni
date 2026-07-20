@@ -1,6 +1,6 @@
 # WAV → Fourier → Chladni Pattern
 
-An interactive tool to analyze WAV audio files, perform discrete Fourier analysis to extract dominant peak frequencies, and map those peaks to physical resonant modes on a square Chladni vibrating plate.
+> An interactive tool to analyze WAV audio files, perform discrete Fourier analysis to extract dominant peak frequencies, and map those peaks to physical resonant modes on a square Chladni vibrating plate.
 
 This repository is a fork of [Fourier-from-WAV-file](https://github.com/KyleSmith19091/Fourier-from-WAV-file), extended to support interactive TUI workflows, macOS native file dialogs, SVG design exports, and WebGL-powered interactive HTML dashboards.
 
